@@ -12,6 +12,23 @@ from verificacion import (
 )
 
 
+def formatear_digitos_defendibles(valor: float, digitos: int) -> str:
+    if digitos <= 0:
+        return "0"
+    if valor == 0.0:
+        return f"{0.0:.{digitos - 1}f}"
+
+    # Todas las incógnitas tienen 1 dígito entero distinto de cero (orden 10^-1 a 10^0)
+    abs_val = abs(valor)
+    if abs_val >= 1.0:
+        decimales = max(0, digitos - 1)
+    else:
+        # Ej: 0.8 tiene primer dígito significativo en la 1ra posición decimal
+        orden = int(np.floor(np.log10(abs_val)))
+        decimales = max(0, digitos - 1 - orden)
+    return f"{valor:.{decimales}f}"
+
+
 def main() -> None:
     raiz = Path(__file__).resolve().parent.parent
     ruta_a = raiz / "datos" / "matriz_a.csv"
@@ -75,10 +92,9 @@ def main() -> None:
         d_ref = eval_ref.digitos_correctos_comp[i]
         d_sin = eval_sin.digitos_correctos_comp[i]
 
-        # Formatear con la cantidad de dígitos significativos defendibles
-        val_esc_str = f"{res_esc.x[i]:.{d_esc}g}"
-        val_ref_str = f"{x_refinado[i]:.{d_ref}g}"
-        val_sin_str = f"{res_sin.x[i]:.{d_sin}g}"
+        val_esc_str = formatear_digitos_defendibles(float(res_esc.x[i]), d_esc)
+        val_ref_str = formatear_digitos_defendibles(float(x_refinado[i]), d_ref)
+        val_sin_str = formatear_digitos_defendibles(float(res_sin.x[i]), d_sin)
 
         lineas_sol.append(
             f"x{i+1},{val_esc_str},{d_esc},{val_ref_str},{d_ref},{val_sin_str},{d_sin},"
