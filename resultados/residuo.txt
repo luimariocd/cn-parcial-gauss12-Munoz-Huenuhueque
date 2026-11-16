@@ -1,0 +1,41 @@
+======================================================================
+VERIFICACIÓN EN PRECISIÓN EXTENDIDA (mpmath 80 dígitos) Y REFINAMIENTO
+======================================================================
+Condicionamiento kappa_2(A)   : 3.084727e+13
+Condicionamiento kappa_inf(A) : 5.367827e+13
+
+--- 1. Residuo r = b - A*x (Pivoteo Parcial Escalado) ---
+r[01] = -5.778590420546015327118994e-21
+r[02] = 1.589151145914930231661799e-11
+r[03] = 4.296670638170916838305402e-19
+r[04] = 7.026686143865077732506563e-12
+r[05] = -2.583417007522997728585779e-20
+r[06] = 6.036461860180701982869778e-10
+r[07] = 4.002787368974531373666537e-17
+r[08] = -2.760859856994563124032993e-11
+r[09] = -1.99961599582825659382479e-20
+r[10] = 2.801989911930882293233935e-13
+r[11] = 1.926966383480908761161032e-17
+r[12] = -1.439130684977877661978596e-11
+Norma infinito ||r||_inf : 6.0364618601807e-10
+Norma 2        ||r||_2   : 6.04698317583323e-10
+Error relativo ||dx||/||x||_2 : 2.701461e-13
+
+--- 2. Residuo r = b - A*x (Sin Pivoteo) ---
+Norma infinito ||r||_inf : 7.15457900209863e-7
+Norma 2        ||r||_2   : 7.16253121775448e-7
+Error relativo ||dx||/||x||_2 : 2.380290e-10
+
+--- 3. Residuo r = b - A*x (Pivoteo Parcial Estándar) ---
+Norma infinito ||r||_inf : 2.10534792497113e-10
+Error relativo ||dx||/||x||_2 : 6.330142e-13
+
+--- 4. Evolución del Refinamiento Iterativo (sobre Pivoteo Escalado) ---
+Iteración 0: ||r||_inf = 6.03646186018e-10 | Error relativo ||dx||/||x||_2 = 2.701461e-13
+Iteración 1: ||r||_inf = 2.60318736961e-10 | Error relativo ||dx||/||x||_2 = 4.855364e-17
+Iteración 2: ||r||_inf = 2.60318736961e-10 | Error relativo ||dx||/||x||_2 = 4.855364e-17
+
+--- 5. Contraste contra rutina de biblioteca (numpy.linalg.solve) ---
+Diferencia ||x_escalado - x_numpy||_inf : 5.440093e-14
+Diferencia ||x_refinado - x_numpy||_inf : 7.251977e-13
+Error relativo numpy ||dx||/||x||_2     : 2.926926e-13
