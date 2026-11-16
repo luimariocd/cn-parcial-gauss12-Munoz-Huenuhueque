@@ -105,7 +105,7 @@ def refinamiento_iterativo(
     perm: np.ndarray,
     x_inicial: np.ndarray,
     pasadas: int = 2,
-) -> List[ Tuple[int, np.ndarray, mp.mpf] ]:
+) -> List[Tuple[int, np.ndarray, mp.mpf]]:
     """
     Ejecuta refinamiento iterativo:
     1. Calcula r^(m) = b - A x^(m) en precisión extendida (mpmath 80 dígitos).
