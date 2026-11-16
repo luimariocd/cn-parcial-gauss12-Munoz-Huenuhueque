@@ -11,7 +11,6 @@ from verificacion import (
     refinamiento_iterativo,
 )
 
-
 def formatear_digitos_defendibles(valor: float, digitos: int) -> str:
     if digitos <= 0:
         return "0"
