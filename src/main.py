@@ -12,19 +12,16 @@ from verificacion import (
 )
 
 def formatear_digitos_defendibles(valor: float, digitos: int) -> str:
+    """Devuelve el valor con exactamente ``digitos`` cifras significativas."""
     if digitos <= 0:
         return "0"
     if valor == 0.0:
-        return f"{0.0:.{digitos - 1}f}"
+        return f"{0.0:.{max(0, digitos - 1)}f}"
 
-    # Todas las incógnitas tienen 1 dígito entero distinto de cero (orden 10^-1 a 10^0)
-    abs_val = abs(valor)
-    if abs_val >= 1.0:
-        decimales = max(0, digitos - 1)
-    else:
-        # Ej: 0.8 tiene primer dígito significativo en la 1ra posición decimal
-        orden = int(np.floor(np.log10(abs_val)))
-        decimales = max(0, digitos - 1 - orden)
+    # Se usa mpmath para calcular el orden de magnitud y evitar errores de borde
+    # de log10 en punto flotante (por ejemplo, valores muy cercanos a una potencia de 10).
+    orden = int(mp.floor(mp.log10(abs(mp.mpf(valor)))))
+    decimales = max(0, digitos - 1 - orden)
     return f"{valor:.{decimales}f}"
 
 
@@ -56,7 +53,7 @@ def main() -> None:
 
     # 4. Refinamiento iterativo sobre la solución con pivoteo escalado
     hist_ref = refinamiento_iterativo(
-        filas_a_str, filas_b_str, res_esc.L, res_esc.U, res_esc.perm, res_esc.x, pasadas=2
+        filas_a_str, filas_b_str, res_esc.L, res_esc.U, res_esc.perm, res_esc.x, pasadas=1
     )
     x_refinado = hist_ref[-1][1]
     eval_ref = evaluar_exactitud(filas_a_str, filas_b_str, x_refinado, x_exacta_mp)
@@ -73,18 +70,18 @@ def main() -> None:
     texto_traza.append(">>> CORRIDA 1: PIVOTEO PARCIAL ESCALADO (ESTRATEGIA ÓPTIMA) <<<\n")
     texto_traza.extend(res_esc.traza_pasos)
     max_sub_esc = float(np.max(np.abs(np.tril(res_esc.U, -1))))
-    texto_traza.append(f"Verificación triangular superior (máximo valor bajo la diagonal): {max_sub_esc:.1e}\n\n")
+    texto_traza.append(f"Verificación triangular superior (máximo valor bajo la diagonal): {max_sub_esc:.10e}\n\n")
 
     texto_traza.append(">>> CORRIDA 2: SIN PIVOTEO (COMPARACIÓN DE PÉRDIDA DE MANTISA) <<<\n")
     texto_traza.extend(res_sin.traza_pasos)
     max_sub_sin = float(np.max(np.abs(np.tril(res_sin.U, -1))))
-    texto_traza.append(f"Verificación triangular superior (máximo valor bajo la diagonal): {max_sub_sin:.1e}\n")
+    texto_traza.append(f"Verificación triangular superior (máximo valor bajo la diagonal): {max_sub_sin:.10e}\n")
 
     (dir_res / "traza_eliminacion.txt").write_text("\n".join(texto_traza), encoding="utf-8")
 
     # 7. Generar resultados/solucion.csv
     lineas_sol = [
-        "incognita,valor_pivoteo_escalado,digitos_correctos_escalado,valor_refinado,digitos_correctos_refinado,valor_sin_pivoteo,digitos_correctos_sin_pivoteo,error_relativo_escalado,error_relativo_sin_pivoteo"
+        "incognita,valor_pivoteo_escalado,digitos_correctos_escalado,valor_refinado,digitos_correctos_refinado,valor_sin_pivoteo,digitos_correctos_sin_pivoteo,error_relativo_componente_escalado,error_relativo_componente_sin_pivoteo"
     ]
     for i in range(12):
         d_esc = eval_esc.digitos_correctos_comp[i]
@@ -118,16 +115,16 @@ def main() -> None:
     lineas_res.extend([
         f"Norma infinito ||r||_inf : {mp.nstr(eval_esc.norma_inf_residuo, 15)}",
         f"Norma 2        ||r||_2   : {mp.nstr(eval_esc.norma_2_residuo, 15)}",
-        f"Error relativo ||dx||/||x||_2 : {eval_esc.error_relativo_norm2:.6e}",
+        f"Error forward ||x_hat - x*||_2 / ||x*||_2 : {eval_esc.error_relativo_norm2:.6e}",
         "",
         "--- 2. Residuo r = b - A*x (Sin Pivoteo) ---",
         f"Norma infinito ||r||_inf : {mp.nstr(eval_sin.norma_inf_residuo, 15)}",
         f"Norma 2        ||r||_2   : {mp.nstr(eval_sin.norma_2_residuo, 15)}",
-        f"Error relativo ||dx||/||x||_2 : {eval_sin.error_relativo_norm2:.6e}",
+        f"Error forward ||x_hat - x*||_2 / ||x*||_2 : {eval_sin.error_relativo_norm2:.6e}",
         "",
         "--- 3. Residuo r = b - A*x (Pivoteo Parcial Estándar) ---",
         f"Norma infinito ||r||_inf : {mp.nstr(eval_parc.norma_inf_residuo, 15)}",
-        f"Error relativo ||dx||/||x||_2 : {eval_parc.error_relativo_norm2:.6e}",
+        f"Error forward ||x_hat - x*||_2 / ||x*||_2 : {eval_parc.error_relativo_norm2:.6e}",
         "",
         "--- 4. Evolución del Refinamiento Iterativo (sobre Pivoteo Escalado) ---",
     ])
@@ -135,7 +132,7 @@ def main() -> None:
         ev_it = evaluar_exactitud(filas_a_str, filas_b_str, x_it, x_exacta_mp)
         lineas_res.append(
             f"Iteración {paso_ref}: ||r||_inf = {mp.nstr(n_inf_it, 12)} | "
-            f"Error relativo ||dx||/||x||_2 = {ev_it.error_relativo_norm2:.6e}"
+            f"Error forward ||x_hat - x*||_2 / ||x*||_2 = {ev_it.error_relativo_norm2:.6e}"
         )
 
     lineas_res.extend([
@@ -143,7 +140,7 @@ def main() -> None:
         "--- 5. Contraste contra rutina de biblioteca (numpy.linalg.solve) ---",
         f"Diferencia ||x_escalado - x_numpy||_inf : {np.max(np.abs(res_esc.x - x_numpy)):.6e}",
         f"Diferencia ||x_refinado - x_numpy||_inf : {np.max(np.abs(x_refinado - x_numpy)):.6e}",
-        f"Error relativo numpy ||dx||/||x||_2     : {eval_np.error_relativo_norm2:.6e}",
+        f"Error forward numpy ||x_hat - x*||_2 / ||x*||_2 : {eval_np.error_relativo_norm2:.6e}",
     ])
     (dir_res / "residuo.txt").write_text("\n".join(lineas_res) + "\n", encoding="utf-8")
 

@@ -1,7 +1,7 @@
 ======================================================================
 VERIFICACIÓN EN PRECISIÓN EXTENDIDA (mpmath 80 dígitos) Y REFINAMIENTO
 ======================================================================
-Condicionamiento kappa_2(A)   : 3.084727e+13
+Condicionamiento kappa_2(A)   : 3.084733e+13
 Condicionamiento kappa_inf(A) : 5.367827e+13
 
 --- 1. Residuo r = b - A*x (Pivoteo Parcial Escalado) ---
@@ -19,23 +19,22 @@ r[11] = 1.926966383480908761161032e-17
 r[12] = -1.439130684977877661978596e-11
 Norma infinito ||r||_inf : 6.0364618601807e-10
 Norma 2        ||r||_2   : 6.04698317583323e-10
-Error relativo ||dx||/||x||_2 : 2.701461e-13
+Error forward ||x_hat - x*||_2 / ||x*||_2 : 2.701461e-13
 
 --- 2. Residuo r = b - A*x (Sin Pivoteo) ---
 Norma infinito ||r||_inf : 7.15457900209863e-7
 Norma 2        ||r||_2   : 7.16253121775448e-7
-Error relativo ||dx||/||x||_2 : 2.380290e-10
+Error forward ||x_hat - x*||_2 / ||x*||_2 : 2.380290e-10
 
 --- 3. Residuo r = b - A*x (Pivoteo Parcial Estándar) ---
 Norma infinito ||r||_inf : 2.10534792497113e-10
-Error relativo ||dx||/||x||_2 : 6.330142e-13
+Error forward ||x_hat - x*||_2 / ||x*||_2 : 6.330142e-13
 
 --- 4. Evolución del Refinamiento Iterativo (sobre Pivoteo Escalado) ---
-Iteración 0: ||r||_inf = 6.03646186018e-10 | Error relativo ||dx||/||x||_2 = 2.701461e-13
-Iteración 1: ||r||_inf = 2.60318736961e-10 | Error relativo ||dx||/||x||_2 = 4.855364e-17
-Iteración 2: ||r||_inf = 2.60318736961e-10 | Error relativo ||dx||/||x||_2 = 4.855364e-17
+Iteración 0: ||r||_inf = 6.03646186018e-10 | Error forward ||x_hat - x*||_2 / ||x*||_2 = 2.701461e-13
+Iteración 1: ||r||_inf = 2.60318736961e-10 | Error forward ||x_hat - x*||_2 / ||x*||_2 = 4.855364e-17
 
 --- 5. Contraste contra rutina de biblioteca (numpy.linalg.solve) ---
-Diferencia ||x_escalado - x_numpy||_inf : 5.440093e-14
-Diferencia ||x_refinado - x_numpy||_inf : 7.251977e-13
-Error relativo numpy ||dx||/||x||_2     : 2.926926e-13
+Diferencia ||x_escalado - x_numpy||_inf : 8.184564e-13
+Diferencia ||x_refinado - x_numpy||_inf : 1.489253e-12
+Error forward numpy ||x_hat - x*||_2 / ||x*||_2 : 5.994683e-13

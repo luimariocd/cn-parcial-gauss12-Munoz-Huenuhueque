@@ -30,8 +30,10 @@
 
 ## Comparación de Estrategias y Cotas de Referencia
 
-| Estrategia | Mult / Div | Sum / Rest | Total FLOPs Aritméticos | Cota de Referencia | Diferencia | Sobrecosto de Estabilidad |
+| Estrategia | Mult / Div | Sum / Rest | Total FLOPs Aritméticos | Cota de Referencia | Diferencia vs. 1486 | Sobrecosto de Estabilidad |
 |:---|:---:|:---:|:---:|:---:|:---:|:---|
-| Sin pivoteo | 716 | 638 | **1354** | 1486 | 0 (0.00%) | 0 comparaciones, 0 intercambios |
-| Pivoteo parcial | 716 | 638 | **1354** | 1486 | 0 (0.00%) | 66 comparaciones, 9 intercambios |
-| Pivoteo parcial escalado | 716 | 638 | **1354** | 1486 | 0 (0.00%) | 132 comp. escala + 78 div. cocientes + 66 comp. pivote, 8 intercambios |
+| Sin pivoteo | 716 | 638 | **1354** | 1486 | -132 (-8.88%) | 0 comparaciones, 0 intercambios |
+| Pivoteo parcial | 716 | 638 | **1354** | 1486 | -132 (-8.88%) | 66 comparaciones, 9 intercambios |
+| Pivoteo parcial escalado | 716 | 638 | **1354** | 1486 | -132 (-8.88%) | 132 comp. escala + 77 div. cocientes + 66 comp. pivote, 8 intercambios |
+
+El total de 1354 FLOPs es el mínimo estricto bajo la convención declarada (eliminación + actualización de b + sustitución regresiva). La cota de 1486 es la referencia del enunciado; la diferencia se calcula respecto de ella.
