@@ -1,0 +1,15 @@
+# Entornos virtuales y cachés de Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Herramientas y sistemas
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# Variables de entorno
+.env

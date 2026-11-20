@@ -24,12 +24,12 @@ class ResultadoGauss:
 def _formatear_matriz_aumentada(A: np.ndarray, b: np.ndarray, titulo: str) -> str:
     n = A.shape[0]
     lineas = [titulo]
-    header = "Fila | " + " ".join(f"{'c'+str(j+1):>14s}" for j in range(n)) + f" | {'b':>15s}"
+    header = "Fila | " + " ".join(f"{'c'+str(j+1):>16s}" for j in range(n)) + f" | {'b':>18s}"
     lineas.append(header)
     lineas.append("-" * len(header))
     for i in range(n):
-        fila_str = " ".join(f"{A[i, j]:14.6e}" for j in range(n))
-        lineas.append(f"F{i+1:02d}  | {fila_str} | {b[i]:15.7e}")
+        fila_str = " ".join(f"{A[i, j]:16.10e}" for j in range(n))
+        lineas.append(f"F{i+1:02d}  | {fila_str} | {b[i]:18.12e}")
     lineas.append("")
     return "\n".join(lineas)
 
@@ -111,6 +111,8 @@ def eliminar_y_resolver(
         pivote = A[k, k]
         if pivote == 0.0:
             raise ZeroDivisionError(f"Pivote nulo en el paso k={k+1}")
+        if abs(pivote) > max_proceso:
+            max_proceso = float(abs(pivote))
 
         # Barrido de filas inferiores
         for i in range(k + 1, n):
@@ -141,7 +143,7 @@ def eliminar_y_resolver(
         info_inter = f"Intercambio F{k+1} <-> F{p+1}" if p != k else "Sin intercambio"
         titulo_paso = (
             f"--- PASO {k+1:02d} ({estrategia}) | Fila original: F{perm[k]+1} | "
-            f"Pivote = {pivote:.6e} | {info_inter} ---"
+            f"Pivote = {pivote:.10e} | {info_inter} ---"
         )
         traza_pasos.append(_formatear_matriz_aumentada(A, b, titulo_paso))
 
@@ -192,20 +194,30 @@ def resolver_con_lu(L: np.ndarray, U: np.ndarray, perm: np.ndarray, b_in: np.nda
     n = L.shape[0]
     b_p = b_in[perm].astype(np.float64)
 
-    # Sustitución progresiva: L y = P b (L tiene diagonal unitaria)
+    # Sustitución progresiva: L y = P b (L tiene diagonal unitaria).
+    # Se inicializa la suma con el primer producto para no contar una suma
+    # innecesaria; así el costo es exactamente n(n-1) = 132 FLOPs.
     y = np.zeros(n, dtype=np.float64)
     for i in range(n):
-        suma = 0.0
-        for j in range(i):
-            suma += L[i, j] * y[j]
-        y[i] = b_p[i] - suma
+        if i == 0:
+            y[i] = b_p[i]
+        else:
+            suma = L[i, 0] * y[0]
+            for j in range(1, i):
+                suma += L[i, j] * y[j]
+            y[i] = b_p[i] - suma
 
-    # Sustitución regresiva: U x = y
+    # Sustitución regresiva: U x = y.
+    # Costo exacto: 144 FLOPs (66 productos, 55 sumas, 11 restas y 12 divisiones);
+    # el total del refinamiento es 132 + 144 = 276 FLOPs.
     x = np.zeros(n, dtype=np.float64)
     for i in range(n - 1, -1, -1):
-        suma = 0.0
-        for j in range(i + 1, n):
-            suma += U[i, j] * x[j]
-        x[i] = (y[i] - suma) / U[i, i]
+        if i == n - 1:
+            x[i] = y[i] / U[i, i]
+        else:
+            suma = U[i, i + 1] * x[i + 1]
+            for j in range(i + 2, n):
+                suma += U[i, j] * x[j]
+            x[i] = (y[i] - suma) / U[i, i]
 
     return x

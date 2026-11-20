@@ -94,10 +94,19 @@ def generar_markdown_conteo(
         "",
         "## Comparación de Estrategias y Cotas de Referencia",
         "",
-        "| Estrategia | Mult / Div | Sum / Rest | Total FLOPs Aritméticos | Cota de Referencia | Diferencia | Sobrecosto de Estabilidad |",
+        "| Estrategia | Mult / Div | Sum / Rest | Total FLOPs Aritméticos | Cota de Referencia | Diferencia vs. 1486 | Sobrecosto de Estabilidad |",
         "|:---|:---:|:---:|:---:|:---:|:---:|:---|",
-        f"| Sin pivoteo | {c_sin.total_mult_div} | {c_sin.total_sum_rest} | **{c_sin.total_flops}** | 1486 | 0 (0.00%) | 0 comparaciones, 0 intercambios |",
-        f"| Pivoteo parcial | {c_parc.total_mult_div} | {c_parc.total_sum_rest} | **{c_parc.total_flops}** | 1486 | 0 (0.00%) | 66 comparaciones, {c_parc.total_intercambios} intercambios |",
-        f"| Pivoteo parcial escalado | {c_esc.total_mult_div} | {c_esc.total_sum_rest} | **{c_esc.total_flops}** | 1486 | 0 (0.00%) | 132 comp. escala + 78 div. cocientes + 66 comp. pivote, {c_esc.total_intercambios} intercambios |",
+        f"| Sin pivoteo | {c_sin.total_mult_div} | {c_sin.total_sum_rest} | **{c_sin.total_flops}** | 1486 | {_diferencia(c_sin.total_flops)} | 0 comparaciones, 0 intercambios |",
+        f"| Pivoteo parcial | {c_parc.total_mult_div} | {c_parc.total_sum_rest} | **{c_parc.total_flops}** | 1486 | {_diferencia(c_parc.total_flops)} | {c_parc.total_comparaciones_pivoteo} comparaciones, {c_parc.total_intercambios} intercambios |",
+        f"| Pivoteo parcial escalado | {c_esc.total_mult_div} | {c_esc.total_sum_rest} | **{c_esc.total_flops}** | 1486 | {_diferencia(c_esc.total_flops)} | {c_esc.escala_comparaciones} comp. escala + {c_esc.escala_divisiones} div. cocientes + {sum(p.comparaciones for p in c_esc.pasos)} comp. pivote, {c_esc.total_intercambios} intercambios |",
+        "",
+        "El total de 1354 FLOPs es el mínimo estricto bajo la convención declarada "
+        "(eliminación + actualización de b + sustitución regresiva). La cota de 1486 "
+        "es la referencia del enunciado; la diferencia se calcula respecto de ella.",
     ])
     return "\n".join(lineas) + "\n"
+
+
+def _diferencia(total: int, referencia: int = 1486) -> str:
+    delta = total - referencia
+    return f"{delta:+d} ({100.0 * delta / referencia:+.2f}%)"
